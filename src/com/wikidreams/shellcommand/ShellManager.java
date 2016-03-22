@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 public class ShellManager {
 
+	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(ShellManager.class);
 
 	public static String executeCommand(ArrayList<String> command) {
 		try {
@@ -15,7 +16,7 @@ public class ShellManager {
 			Process process = pb.start();
 			return output(process.getInputStream());
 		} catch (IOException e) {
-			e.printStackTrace();
+			ShellManager.logger.error(e.getMessage());;			
 		}
 		return "Error: We've got some problems here.";
 	}
