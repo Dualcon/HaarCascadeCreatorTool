@@ -254,8 +254,4 @@ public class HaarCascadeManager {
 		return files;
 	}
 
-
-
-
-
 }
