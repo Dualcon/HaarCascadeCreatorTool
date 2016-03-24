@@ -10,8 +10,14 @@ public class App {
 		// Load project properties.
 		PropertiesManager.loadProperties("resources/config.properties");
 
-		// Create workspace.
+		// Create workspace folder.
 		File file = new File(PropertiesManager.properties.get("WorkSpace"));
+		if (! file.exists()) {
+			file.mkdir();
+		}
+
+		// Create cascades folder.
+		file = new File(PropertiesManager.properties.get("CascadesFolder"));
 		if (! file.exists()) {
 			file.mkdir();
 		}

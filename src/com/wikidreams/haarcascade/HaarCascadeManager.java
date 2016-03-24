@@ -16,6 +16,7 @@ import com.wikidreams.shellcommand.ShellManager;
 
 public class HaarCascadeManager {
 
+
 	private File processDir;
 	private String processName;
 
@@ -59,10 +60,11 @@ public class HaarCascadeManager {
 		this.createSamples();
 	}
 
-	public void createSamples() {
 
+
+	public void createSamples() {
 		// Create process folder.
-		this.processDir = new File(PropertiesManager.properties.get("WorkSpace") + this.processName);
+		this.processDir = new File(PropertiesManager.properties.get("CascadesFolder") + this.processName);
 		if (this.processDir.exists()) {
 			JOptionPane.showMessageDialog(null, "A process with this name already exists.");
 			return;
@@ -73,6 +75,7 @@ public class HaarCascadeManager {
 		this.infoDir = new File(this.processDir + "\\info\\");
 		this.infoDir.mkdir();
 
+		// Create info.lst file.
 		this.infoFile = new File(this.infoDir.getAbsolutePath() + "\\info.lst");
 		StringBuilder sbInfoFile = new StringBuilder();
 
@@ -81,6 +84,7 @@ public class HaarCascadeManager {
 
 		for (File f : this.positiveImages) {
 
+			// Create samples command.
 			ArrayList<String> command = new ArrayList<>();	
 			command.add(PropertiesManager.properties.get("OpenCVBin") + "\\opencv_createsamples.exe");
 			command.add("-info");
@@ -156,7 +160,7 @@ public class HaarCascadeManager {
 
 	private void createVectorFile() {
 		// Create vector folder.
-		this.vecDir = new File(PropertiesManager.properties.get("WorkSpace") + this.processName + "\\vector");
+		this.vecDir = new File(PropertiesManager.properties.get("CascadesFolder") + this.processName + "\\vector");
 		this.vecDir.mkdir();
 
 		// Get number of created images.
@@ -164,6 +168,7 @@ public class HaarCascadeManager {
 		allFiles = this.loadFiles(this.infoDir.getAbsolutePath());
 		this.num = Integer.toString(allFiles.size() - 1);
 
+		// Create vector command.
 		ArrayList<String> command = new ArrayList<>();	
 		command.add(PropertiesManager.properties.get("OpenCVBin") + "\\opencv_createsamples.exe");
 		command.add("-info");
@@ -186,7 +191,7 @@ public class HaarCascadeManager {
 
 		// Create vector report file.
 		try {
-			File reportFile = new File(PropertiesManager.properties.get("WorkSpace") + this.processName + "\\vector_report.log");
+			File reportFile = new File(PropertiesManager.properties.get("CascadesFolder") + this.processName + "\\vector_report.log");
 			FileWriter reportFileWriter = new FileWriter(reportFile);
 			BufferedWriter reportBufferedWriter = new BufferedWriter(reportFileWriter);
 			reportBufferedWriter.write(output);
@@ -194,6 +199,8 @@ public class HaarCascadeManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		// Create train cascade file.
 		this.createCascade();
 	}
 
@@ -201,7 +208,7 @@ public class HaarCascadeManager {
 
 	private void createCascade() {
 		// Create data folder.
-		this.dataDir = new File(PropertiesManager.properties.get("WorkSpace") + this.processName + "\\data");
+		this.dataDir = new File(PropertiesManager.properties.get("CascadesFolder") + this.processName + "\\data");
 		this.dataDir.mkdir();
 
 		// Create bat file content.
@@ -215,7 +222,7 @@ public class HaarCascadeManager {
 		c.append(" -numStages " + this.numStages);
 		c.append(" -w " + this.width);
 		c.append(" -h " + this.height);
-		c.append(" > " + PropertiesManager.properties.get("WorkSpace") + this.processName + "\\cascade_report.log");
+		c.append(" > " + PropertiesManager.properties.get("CascadesFolder") + this.processName + "\\cascade_report.log");
 
 		// Create cascade bat file.
 		try {

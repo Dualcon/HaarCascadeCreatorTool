@@ -17,11 +17,10 @@ public class DialogManager {
 	private static File[] positiveImages;
 	private static File bgFile;
 
-	private static File userDir;
+	private static File currentFolder = new File(PropertiesManager.properties.get("WorkSpace"));
 
 
 	public static void createMenu() {
-		DialogManager.userDir = new File(PropertiesManager.properties.get("WorkSpace"));
 
 		JTextField processName = new JTextField();
 		processName.setToolTipText("Process Name");
@@ -30,13 +29,13 @@ public class DialogManager {
 		img.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc = new JFileChooser(DialogManager.userDir);
+				JFileChooser fc = new JFileChooser(DialogManager.currentFolder);
 				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fc.setMultiSelectionEnabled(true);
 				int returnVal = fc.showOpenDialog(null);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					DialogManager.positiveImages = fc.getSelectedFiles();
-					DialogManager.userDir = fc.getCurrentDirectory();
+					DialogManager.currentFolder = fc.getCurrentDirectory();
 				}		
 			}
 		});
@@ -45,7 +44,7 @@ public class DialogManager {
 		bg.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc = new JFileChooser(DialogManager.userDir);
+				JFileChooser fc = new JFileChooser(DialogManager.currentFolder);
 				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				int returnVal = fc.showOpenDialog(null);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
