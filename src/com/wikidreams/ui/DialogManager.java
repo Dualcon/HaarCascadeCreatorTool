@@ -14,9 +14,12 @@ import com.wikidreams.properties.PropertiesManager;
 
 public class DialogManager {
 
+	static {
+		PropertiesManager.loadProperties("resources/config.properties");
+	}
+
 	private static File[] positiveImages;
 	private static File bgFile;
-
 	private static File currentFolder = new File(PropertiesManager.properties.get("WorkSpace"));
 
 

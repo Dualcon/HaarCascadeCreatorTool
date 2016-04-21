@@ -17,9 +17,11 @@ import com.wikidreams.shellcommand.ShellManager;
 public class HaarCascadeManager {
 
 
-	private File processDir;
-	private String processName;
+	static {
+		PropertiesManager.loadProperties("resources/config.properties");
+	}
 
+	private String processName;
 	private File[] positiveImages;
 	private File bgFile;
 	private String samplesByImage;
@@ -28,16 +30,14 @@ public class HaarCascadeManager {
 	private String maxzangle;
 	private String width;
 	private String height;
-	private File infoDir;
-	private File infoFile;
-
-	private File vecDir;
 	private String num;
-
-	private File dataDir;
 	private String numPos;
 	private String numNeg;
 	private String numStages;
+
+	private File processDir;
+	private File infoFile;
+
 
 	public HaarCascadeManager(String processName, File[] positiveImages, File bgFile,
 			String samplesByImage, String maxxangle, String maxyangle, String maxzangle,
@@ -56,15 +56,27 @@ public class HaarCascadeManager {
 		this.numNeg = numNeg;
 		this.numStages = numStages;
 
+		// Create workspace folder.
+		File dir = new File(PropertiesManager.properties.get("WorkSpace"));
+		if (! dir.exists()) {
+			dir.mkdir();		
+		}
+
+		// Create cascades folder.
+		dir = new File(PropertiesManager.properties.get("WorkSpace") + "\\Cascades");
+		if (! dir.exists()) {
+			dir.mkdir();
+		}
+
 		// Create samples.
 		this.createSamples();
 	}
 
 
 
-	public void createSamples() {
+	private void createSamples() {
 		// Create process folder.
-		this.processDir = new File(PropertiesManager.properties.get("CascadesFolder") + this.processName);
+		this.processDir = new File(PropertiesManager.properties.get("WorkSpace") + "\\Cascades\\" + this.processName);
 		if (this.processDir.exists()) {
 			JOptionPane.showMessageDialog(null, "A process with this name already exists.");
 			return;
@@ -72,41 +84,54 @@ public class HaarCascadeManager {
 		this.processDir.mkdir();
 
 		// Create info folder.
-		this.infoDir = new File(this.processDir + "\\info\\");
-		this.infoDir.mkdir();
+		File infoDir = new File(this.processDir + "\\info\\");
+		infoDir.mkdir();
 
 		// Create info.lst file.
-		this.infoFile = new File(this.infoDir.getAbsolutePath() + "\\info.lst");
-		StringBuilder sbInfoFile = new StringBuilder();
+		this.infoFile = new File(infoDir.getAbsolutePath() + "\\info.lst");
 
+		StringBuilder sbInfoFile = new StringBuilder();
 		File reportFile = new File(this.processDir + "\\samples_report.log");
 		StringBuilder sbReportFile = new StringBuilder();
 
 		for (File f : this.positiveImages) {
 
-			// Create samples command.
-			ArrayList<String> command = new ArrayList<>();	
-			command.add(PropertiesManager.properties.get("OpenCVBin") + "\\opencv_createsamples.exe");
-			command.add("-info");
-			command.add(this.infoDir.getAbsolutePath() + "\\info.lst");
-			command.add("-pngoutput");
-			command.add(this.infoDir.getAbsolutePath());
-			command.add("-img");
-			command.add(f.getAbsolutePath());
-			command.add("-bg");
-			command.add(this.bgFile.getAbsolutePath());
-			command.add("-num");
-			command.add(this.samplesByImage);
-			command.add("-maxxangle");
-			command.add(this.maxxangle);
-			command.add("-maxyangle");
-			command.add(this.maxyangle);
-			command.add("-maxzangle");
-			command.add(this.maxzangle);
-			command.add("-w");
-			command.add(this.width);
-			command.add("-h");
-			command.add(this.height);
+			// Create samples.bat file		
+			StringBuilder b = new StringBuilder();
+			b.append(PropertiesManager.properties.get("OpenCVBin").trim() + "\\opencv_createsamples.exe");
+			b.append(" -info ");
+			b.append(infoDir.getAbsolutePath() + "\\info.lst");
+			b.append(" -pngoutput ");
+			b.append(infoDir.getAbsolutePath());
+			b.append(" -img ");
+			b.append(f.getAbsolutePath());
+			b.append(" -bg ");
+			b.append(this.bgFile.getAbsolutePath());
+			b.append(" -num ");
+			b.append(this.samplesByImage);
+			b.append(" -maxxangle ");
+			b.append(this.maxxangle);
+			b.append(" -maxyangle ");
+			b.append(this.maxyangle);
+			b.append(" -maxzangle ");
+			b.append(this.maxzangle);
+			b.append(" -w ");
+			b.append(this.width);
+			b.append(" -h ");
+			b.append(this.height);
+			try {
+				File tFile = new File(this.processDir.getAbsolutePath() + "\\create_samples.bat");
+				FileWriter tFileWriter = new FileWriter(tFile);
+				BufferedWriter tBufferedWriter = new BufferedWriter(tFileWriter);
+				tBufferedWriter.write(b.toString());
+				tBufferedWriter.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+
+			// Execute samples.bat file.
+			ArrayList<String> command = new ArrayList<>();
+			command.add(this.processDir.getAbsolutePath() + "\\create_samples.bat");
 			String output = ShellManager.executeCommand(command);
 
 			try {
@@ -156,31 +181,42 @@ public class HaarCascadeManager {
 		this.createVectorFile();
 	}
 
-
-
 	private void createVectorFile() {
 		// Create vector folder.
-		this.vecDir = new File(PropertiesManager.properties.get("CascadesFolder") + this.processName + "\\vector");
-		this.vecDir.mkdir();
+		File vecDir = new File(this.processDir.getAbsolutePath() + "\\vector");
+		vecDir.mkdir();
 
 		// Get number of created images.
-		ArrayList<File> allFiles = new ArrayList<>();
-		allFiles = this.loadFiles(this.infoDir.getAbsolutePath());
-		this.num = Integer.toString(allFiles.size() - 1);
+		File infoDir = new File(this.processDir.getAbsolutePath() + "\\info");
+		File[] allFiles = infoDir.listFiles();
+		this.num = Integer.toString(allFiles.length - 1);
 
-		// Create vector command.
-		ArrayList<String> command = new ArrayList<>();	
-		command.add(PropertiesManager.properties.get("OpenCVBin") + "\\opencv_createsamples.exe");
-		command.add("-info");
-		command.add(this.infoDir.getAbsolutePath() + "\\info.lst");
-		command.add("-num");
-		command.add(this.num);
-		command.add("-w");
-		command.add(this.width);
-		command.add("-h");
-		command.add(this.height);
-		command.add("-vec");
-		command.add(this.vecDir + "\\samples.vec");
+		// Create vector.bat file.
+		StringBuilder b = new StringBuilder();
+		b.append(PropertiesManager.properties.get("OpenCVBin").trim() + "\\opencv_createsamples.exe");
+		b.append(" -info ");
+		b.append(this.processDir.getAbsolutePath() + "\\info\\info.lst");
+		b.append(" -num ");
+		b.append(this.num);
+		b.append(" -w ");
+		b.append(this.width);
+		b.append(" -h ");
+		b.append(this.height);
+		b.append(" -vec ");
+		b.append(this.processDir.getAbsolutePath() + "\\vector\\samples.vec");
+		try {
+			File tFile = new File(this.processDir.getAbsolutePath() + "\\create_vector.bat");
+			FileWriter tFileWriter = new FileWriter(tFile);
+			BufferedWriter tBufferedWriter = new BufferedWriter(tFileWriter);
+			tBufferedWriter.write(b.toString());
+			tBufferedWriter.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+		// Execute create_vector.bat file.
+		ArrayList<String> command = new ArrayList<>();
+		command.add(this.processDir.getAbsolutePath() + "\\create_vector.bat");
 		String output = ShellManager.executeCommand(command);
 
 		try {
@@ -191,7 +227,7 @@ public class HaarCascadeManager {
 
 		// Create vector report file.
 		try {
-			File reportFile = new File(PropertiesManager.properties.get("CascadesFolder") + this.processName + "\\vector_report.log");
+			File reportFile = new File(this.processDir.getAbsolutePath() + "\\vector_report.log");
 			FileWriter reportFileWriter = new FileWriter(reportFile);
 			BufferedWriter reportBufferedWriter = new BufferedWriter(reportFileWriter);
 			reportBufferedWriter.write(output);
@@ -208,57 +244,35 @@ public class HaarCascadeManager {
 
 	private void createCascade() {
 		// Create data folder.
-		this.dataDir = new File(PropertiesManager.properties.get("CascadesFolder") + this.processName + "\\data");
-		this.dataDir.mkdir();
+		File dataDir = new File(this.processDir.getAbsolutePath() + "\\data");
+		dataDir.mkdir();
 
 		// Create bat file content.
-		StringBuilder c = new StringBuilder();
-		c.append(PropertiesManager.properties.get("OpenCVBin") + "opencv_traincascade.exe");
-		c.append(" -data " + this.dataDir.getAbsolutePath());
-		c.append(" -vec " + this.vecDir.getAbsolutePath() + "\\samples.vec");
-		c.append(" -bg " + this.bgFile.getAbsolutePath());
-		c.append(" -numPos " + this.numPos);
-		c.append(" -numNeg " + this.numNeg);
-		c.append(" -numStages " + this.numStages);
-		c.append(" -w " + this.width);
-		c.append(" -h " + this.height);
-		c.append(" > " + PropertiesManager.properties.get("CascadesFolder") + this.processName + "\\cascade_report.log");
-
-		// Create cascade bat file.
+		StringBuilder b = new StringBuilder();
+		b.append(PropertiesManager.properties.get("OpenCVBin").trim() + "\\opencv_traincascade.exe");
+		b.append(" -data " + dataDir.getAbsolutePath());
+		b.append(" -vec " + this.processDir.getAbsolutePath() + "\\vector\\samples.vec");
+		b.append(" -bg " + this.bgFile.getAbsolutePath());
+		b.append(" -numPos " + this.numPos);
+		b.append(" -numNeg " + this.numNeg);
+		b.append(" -numStages " + this.numStages);
+		b.append(" -w " + this.width);
+		b.append(" -h " + this.height);
+		b.append(" > " + this.processDir.getAbsolutePath() + "\\cascade_report.log");
+		File tFile = new File(PropertiesManager.properties.get("OpenCVBin").trim() + "\\create_train.bat");
 		try {
-			File reportFile = new File(PropertiesManager.properties.get("OpenCVBin") + this.processName + "_cascade.bat");
-			FileWriter reportFileWriter = new FileWriter(reportFile);
-			BufferedWriter reportBufferedWriter = new BufferedWriter(reportFileWriter);
-			reportBufferedWriter.write(c.toString());
-			reportBufferedWriter.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+			FileWriter tFileWriter = new FileWriter(tFile);
+			BufferedWriter tBufferedWriter = new BufferedWriter(tFileWriter);
+			tBufferedWriter.write(b.toString());
+			tBufferedWriter.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
+
+		// Alert user to start the process.
+		JOptionPane.showMessageDialog(null, "Start the process with the file: " + tFile.getAbsolutePath());
 	}
 
 
-
-	private void displayDirectoryContents(File dir, ArrayList<File> result) {
-		try {
-			File[] files = dir.listFiles();
-			for (File file : files) {
-				if (file.isDirectory()) {
-					//System.out.println("directory:" + file.getAbsolutePath());
-					displayDirectoryContents(file, result);
-				} else {
-					//System.out.println("     file:" + file.getAbsolutePath());
-					result.add(new File(file.getAbsolutePath()));
-				}		
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private ArrayList<File> loadFiles(String path) {
-		ArrayList<File> files = new ArrayList<>();
-		this.displayDirectoryContents(new File(path), files);
-		return files;
-	}
 
 }
