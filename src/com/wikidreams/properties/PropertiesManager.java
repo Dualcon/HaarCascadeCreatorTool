@@ -23,8 +23,6 @@ public class PropertiesManager {
 					// Read project properties file
 					PropertiesManager.properties.clear();
 					PropertiesManager.properties.put("OpenCVBin", prop.getProperty("OpenCVBin"));
-					PropertiesManager.properties.put("WorkSpace", prop.getProperty("WorkSpace"));
-					PropertiesManager.properties.put("CascadesFolder", prop.getProperty("CascadesFolder"));
 
 					PropertiesManager.logger.info("Project properties loaded.");
 				} else {

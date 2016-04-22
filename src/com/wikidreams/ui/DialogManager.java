@@ -20,7 +20,7 @@ public class DialogManager {
 
 	private static File[] positiveImages;
 	private static File bgFile;
-	private static File currentFolder = new File(PropertiesManager.properties.get("WorkSpace"));
+	private static File currentFolder = new File(PropertiesManager.properties.get("OpenCVBin"));
 
 
 	public static void createMenu() {

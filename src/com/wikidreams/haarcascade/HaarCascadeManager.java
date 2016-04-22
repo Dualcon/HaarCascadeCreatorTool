@@ -57,13 +57,13 @@ public class HaarCascadeManager {
 		this.numStages = numStages;
 
 		// Create workspace folder.
-		File dir = new File(PropertiesManager.properties.get("WorkSpace"));
+		File dir = new File(PropertiesManager.properties.get("OpenCVBin").trim() + "\\Workspace");
 		if (! dir.exists()) {
 			dir.mkdir();		
 		}
 
 		// Create cascades folder.
-		dir = new File(PropertiesManager.properties.get("WorkSpace") + "\\Cascades");
+		dir = new File(PropertiesManager.properties.get("OpenCVBin").trim() + "\\Workspace\\Cascades");
 		if (! dir.exists()) {
 			dir.mkdir();
 		}
@@ -76,7 +76,7 @@ public class HaarCascadeManager {
 
 	private void createSamples() {
 		// Create process folder.
-		this.processDir = new File(PropertiesManager.properties.get("WorkSpace") + "\\Cascades\\" + this.processName);
+		this.processDir = new File(PropertiesManager.properties.get("OpenCVBin").trim() + "\\Workspace\\Cascades\\" + this.processName);
 		if (this.processDir.exists()) {
 			JOptionPane.showMessageDialog(null, "A process with this name already exists.");
 			return;
@@ -259,7 +259,7 @@ public class HaarCascadeManager {
 		b.append(" -w " + this.width);
 		b.append(" -h " + this.height);
 		b.append(" > " + this.processDir.getAbsolutePath() + "\\cascade_report.log");
-		File tFile = new File(PropertiesManager.properties.get("OpenCVBin").trim() + "\\create_train.bat");
+		File tFile = new File(PropertiesManager.properties.get("OpenCVBin").trim() + "\\" + this.processName + "_train.bat");
 		try {
 			FileWriter tFileWriter = new FileWriter(tFile);
 			BufferedWriter tBufferedWriter = new BufferedWriter(tFileWriter);
