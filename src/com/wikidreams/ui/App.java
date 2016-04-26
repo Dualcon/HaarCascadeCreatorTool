@@ -6,7 +6,6 @@ public class App {
 
 		// Create dialog menu.
 		DialogManager.createMenu();
-
-	}
+}
 
 }
